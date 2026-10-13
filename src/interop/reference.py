@@ -46,7 +46,7 @@ def capability_statement() -> dict:
 class ReferenceServer(ThreadingHTTPServer):
     daemon_threads = True
 
-    def __init__(self, port=0):
+    def __init__(self, port=0, handler=None):
         self.secret = secrets.token_urlsafe(32)
         self.tokens = {}
         self.resources = {}
@@ -54,7 +54,7 @@ class ReferenceServer(ThreadingHTTPServer):
         self.fhir_failures = 0
         self.fhir_requests = 0
         self.token_requests = 0
-        super().__init__(("127.0.0.1", port), ReferenceHandler)
+        super().__init__(("127.0.0.1", port), handler or ReferenceHandler)
 
     @property
     def origin(self):
