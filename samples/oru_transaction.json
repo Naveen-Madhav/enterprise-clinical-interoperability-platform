@@ -1,0 +1,100 @@
+{
+  "resourceType": "Bundle",
+  "type": "transaction",
+  "entry": [
+    {
+      "fullUrl": "https://bridge.example.invalid/fhir/Patient/patient-74dac098d8b3ef5d17e65721d2f21bd8",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-74dac098d8b3ef5d17e65721d2f21bd8",
+        "identifier": [
+          {
+            "system": "urn:id:FICTIONAL_MRN",
+            "value": "SYN-1001"
+          }
+        ],
+        "name": [
+          {
+            "family": "ExampleOnly",
+            "given": [
+              "Avery"
+            ]
+          }
+        ],
+        "gender": "unknown",
+        "birthDate": "1988-02-14"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Patient/patient-74dac098d8b3ef5d17e65721d2f21bd8"
+      }
+    },
+    {
+      "fullUrl": "https://bridge.example.invalid/fhir/Observation/observation-1d210eabb405f0e81b7b5a21d204ee3b",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "observation-1d210eabb405f0e81b7b5a21d204ee3b",
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "2345-7",
+              "display": "Glucose [Mass/volume] in Serum or Plasma"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/patient-74dac098d8b3ef5d17e65721d2f21bd8"
+        },
+        "effectiveDateTime": "2026-06-10T12:05:00-05:00",
+        "valueQuantity": {
+          "value": 92,
+          "unit": "mg/dL",
+          "system": "http://unitsofmeasure.org",
+          "code": "mg/dL"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Observation/observation-1d210eabb405f0e81b7b5a21d204ee3b"
+      }
+    },
+    {
+      "fullUrl": "https://bridge.example.invalid/fhir/DiagnosticReport/report-e9afa464b79ec155ade94c7d15f5b1e4",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "report-e9afa464b79ec155ade94c7d15f5b1e4",
+        "identifier": [
+          {
+            "system": "urn:id:fictional-lis",
+            "value": "SYN-RESULT-001"
+          }
+        ],
+        "status": "final",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "2345-7",
+              "display": "Glucose [Mass/volume] in Serum or Plasma"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/patient-74dac098d8b3ef5d17e65721d2f21bd8"
+        },
+        "effectiveDateTime": "2026-06-10T12:05:00-05:00",
+        "result": [
+          {
+            "reference": "Observation/observation-1d210eabb405f0e81b7b5a21d204ee3b"
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "DiagnosticReport/report-e9afa464b79ec155ade94c7d15f5b1e4"
+      }
+    }
+  ]
+}

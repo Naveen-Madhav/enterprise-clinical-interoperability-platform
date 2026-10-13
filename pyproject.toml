@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "enterprise-clinical-interoperability-platform"
+version = "1.0.0"
+description = "Clinical integration across HL7 v2, FHIR R4, SMART, DICOM and C-CDA"
+requires-python = ">=3.11"
+dependencies = ["hl7apy==1.3.5", "fhir.resources==6.5.0", "pydantic==1.10.26", "httpx==0.28.1", "pydicom==3.0.2", "pynetdicom==3.0.4", "lxml==6.0.2"]
+
+[project.optional-dependencies]
+dev = ["pytest==8.4.2", "ruff==0.14.0"]
+
+[project.scripts]
+interop-platform = "interop.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
