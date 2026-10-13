@@ -9,7 +9,7 @@ from pathlib import Path
 
 import httpx
 
-from .demo import run_demo
+from .enterprise_demo import run_platform_demo
 from .errors import InterfaceError
 from .fhir import transform, validate_resource
 from .hl7 import parse
@@ -18,23 +18,29 @@ from .ledger import Ledger
 from .mllp import listening, send
 from .operations import healthy, probe, summarize_logs
 from .pipeline import Bridge
+from .platform_commands import add_commands, execute_platform_command
+from .routing import Router
 
 
 @contextmanager
 def api(config):
     with httpx.Client(timeout=8, trust_env=False, follow_redirects=False) as client:
-        tokens = ClientCredentials(
-            config["token_endpoint"],
-            config["client_id"],
-            os.environ.get("BRIDGE_CLIENT_SECRET", ""),
-            config["scope"],
-            client,
-        )
-        yield FhirClient(config["fhir_base"], tokens, client), client
+        clients = {}
+        for name, endpoint in config["endpoints"].items():
+            tokens = ClientCredentials(
+                endpoint["token_endpoint"],
+                endpoint["client_id"],
+                os.environ.get(endpoint["secret_env"], ""),
+                endpoint["scope"],
+                client,
+            )
+            clients[name] = FhirClient(endpoint["fhir_base"], tokens, client)
+        rules = json.loads(Path(config["routes_file"]).read_text())
+        yield Router(clients, rules), client
 
 
 def parser():
-    root = argparse.ArgumentParser(description="HL7/FHIR modernization bridge and operations")
+    root = argparse.ArgumentParser(description="Clinical platform interfaces and operations")
     commands = root.add_subparsers(dest="command", required=True)
     demo = commands.add_parser("demo", help="Run the isolated socket-based integration exercise")
     demo.add_argument("--samples", type=Path, default=Path("samples"))
@@ -42,7 +48,7 @@ def parser():
         sub = commands.add_parser(command)
         sub.add_argument("file", type=Path)
         if command == "validate":
-            sub.add_argument("--format", choices=("hl7", "json"), default="hl7")
+            sub.add_argument("--format", choices=("hl7", "json", "ccda"), default="hl7")
         if command == "source-record":
             sub.add_argument("--database", required=True)
     sender = commands.add_parser("send")
@@ -60,17 +66,25 @@ def parser():
             sub.add_argument("--max-age", type=float, default=60)
         if command == "requeue":
             sub.add_argument("id", type=int)
+    add_commands(commands)
     return root
 
 
 def execute(args):
     if args.command == "demo":
-        return run_demo(args.samples), 0
+        return run_platform_demo(args.samples), 0
+    handled = execute_platform_command(args, api)
+    if handled is not None:
+        return handled
     if args.command == "validate":
         if args.format == "hl7":
             parse(args.file.read_text())
-        else:
+        elif args.format == "json":
             validate_resource(json.loads(args.file.read_text()))
+        else:
+            from .ccda import validate_document
+
+            validate_document(args.file.read_bytes())
         return {"valid_for_project_profile": True}, 0
     if args.command == "transform":
         return transform(parse(args.file.read_text())), 0
@@ -90,7 +104,9 @@ def execute(args):
     config = json.loads(args.config.read_text())
     if args.command == "probe":
         with httpx.Client(timeout=8, trust_env=False) as client:
-            return probe(config["fhir_base"], client), 0
+            return {
+                name: probe(e["fhir_base"], client) for name, e in config["endpoints"].items()
+            }, 0
     ledger = Ledger(config["database"])
     try:
         if args.command == "health":
@@ -103,11 +119,12 @@ def execute(args):
             return {"requeued": args.id}, 0
         if args.command == "reconcile":
             if args.refresh:
-                with api(config) as (destination, _):
+                with api(config) as (router, _):
                     snapshots = {}
                     for path in ledger.resource_paths():
                         try:
-                            resource = destination.request("GET", "/" + path)
+                            name, target = path.split("|", 1)
+                            resource = router.clients[name].request("GET", "/" + target)
                             snapshots[path] = {k: v for k, v in resource.items() if k != "meta"}
                         except InterfaceError as exc:
                             if exc.code != "http.404":
@@ -121,10 +138,11 @@ def execute(args):
         if args.command == "serve":
             if config["listen_host"] != "127.0.0.1":
                 raise ValueError("Reference listener requires a loopback bind")
-            with api(config) as (destination, _):
+            with api(config) as (router, _):
                 bridge = Bridge(
                     ledger,
-                    destination,
+                    None,
+                    router=router,
                     max_attempts=config["max_attempts"],
                     retry_base=config["retry_base_seconds"],
                 )
@@ -147,6 +165,7 @@ def execute(args):
 def main():
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("pynetdicom").setLevel(logging.WARNING)
     args = parser().parse_args()
     try:
         result, status = execute(args)

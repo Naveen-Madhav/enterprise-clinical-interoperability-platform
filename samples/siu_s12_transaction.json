@@ -1,0 +1,72 @@
+{
+  "resourceType": "Bundle",
+  "type": "transaction",
+  "entry": [
+    {
+      "fullUrl": "https://bridge.example.invalid/fhir/Patient/patient-74dac098d8b3ef5d17e65721d2f21bd8",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-74dac098d8b3ef5d17e65721d2f21bd8",
+        "identifier": [
+          {
+            "system": "urn:id:FICTIONAL_MRN",
+            "value": "SYN-1001"
+          }
+        ],
+        "name": [
+          {
+            "family": "ExampleOnly",
+            "given": [
+              "Avery"
+            ]
+          }
+        ],
+        "gender": "unknown",
+        "birthDate": "1988-02-14"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Patient/patient-74dac098d8b3ef5d17e65721d2f21bd8"
+      }
+    },
+    {
+      "fullUrl": "https://bridge.example.invalid/fhir/Appointment/appointment-9908ae4da0529a0f0049468ece0d5ade",
+      "resource": {
+        "resourceType": "Appointment",
+        "id": "appointment-9908ae4da0529a0f0049468ece0d5ade",
+        "identifier": [
+          {
+            "system": "urn:id:fictional-scheduler",
+            "value": "SYN-SLOT-001"
+          }
+        ],
+        "status": "booked",
+        "serviceType": [
+          {
+            "coding": [
+              {
+                "system": "http://loinc.org",
+                "code": "24627-2",
+                "display": "CT Chest"
+              }
+            ]
+          }
+        ],
+        "start": "2026-06-11T10:00:00-05:00",
+        "end": "2026-06-11T10:30:00-05:00",
+        "participant": [
+          {
+            "actor": {
+              "reference": "Patient/patient-74dac098d8b3ef5d17e65721d2f21bd8"
+            },
+            "status": "accepted"
+          }
+        ]
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Appointment/appointment-9908ae4da0529a0f0049468ece0d5ade"
+      }
+    }
+  ]
+}

@@ -1,11 +1,38 @@
 {
   "listen_host": "127.0.0.1",
   "listen_port": 2575,
-  "fhir_base": "http://127.0.0.1:8080/fhir",
-  "token_endpoint": "http://127.0.0.1:8080/oauth/token",
-  "client_id": "legacy-bridge",
-  "scope": "bridge.write",
   "database": "runtime/transactions.sqlite",
+  "routes_file": "config/routes.json",
   "max_attempts": 3,
-  "retry_base_seconds": 2
+  "retry_base_seconds": 2,
+  "endpoints": {
+    "repository": {
+      "fhir_base": "http://127.0.0.1:8080/fhir",
+      "token_endpoint": "http://127.0.0.1:8080/oauth/token",
+      "client_id": "legacy-bridge",
+      "scope": "bridge.write",
+      "secret_env": "FHIR_REPOSITORY_SECRET"
+    },
+    "ris": {
+      "fhir_base": "http://127.0.0.1:8081/fhir",
+      "token_endpoint": "http://127.0.0.1:8081/oauth/token",
+      "client_id": "legacy-bridge",
+      "scope": "bridge.write",
+      "secret_env": "FHIR_RIS_SECRET"
+    },
+    "scheduler": {
+      "fhir_base": "http://127.0.0.1:8082/fhir",
+      "token_endpoint": "http://127.0.0.1:8082/oauth/token",
+      "client_id": "legacy-bridge",
+      "scope": "bridge.write",
+      "secret_env": "FHIR_SCHEDULER_SECRET"
+    },
+    "external-results": {
+      "fhir_base": "http://127.0.0.1:8083/fhir",
+      "token_endpoint": "http://127.0.0.1:8083/oauth/token",
+      "client_id": "legacy-bridge",
+      "scope": "bridge.write",
+      "secret_env": "FHIR_EXTERNAL_RESULTS_SECRET"
+    }
+  }
 }

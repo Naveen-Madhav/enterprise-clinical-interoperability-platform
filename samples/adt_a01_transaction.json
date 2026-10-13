@@ -1,0 +1,58 @@
+{
+  "resourceType": "Bundle",
+  "type": "transaction",
+  "entry": [
+    {
+      "fullUrl": "https://bridge.example.invalid/fhir/Patient/patient-74dac098d8b3ef5d17e65721d2f21bd8",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-74dac098d8b3ef5d17e65721d2f21bd8",
+        "identifier": [
+          {
+            "system": "urn:id:FICTIONAL_MRN",
+            "value": "SYN-1001"
+          }
+        ],
+        "name": [
+          {
+            "family": "ExampleOnly",
+            "given": [
+              "Avery"
+            ]
+          }
+        ],
+        "gender": "unknown",
+        "birthDate": "1988-02-14"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Patient/patient-74dac098d8b3ef5d17e65721d2f21bd8"
+      }
+    },
+    {
+      "fullUrl": "https://bridge.example.invalid/fhir/Encounter/encounter-e957a59bf722a999b1744a22551e416f",
+      "resource": {
+        "resourceType": "Encounter",
+        "id": "encounter-e957a59bf722a999b1744a22551e416f",
+        "identifier": [
+          {
+            "system": "urn:id:fictional-visit",
+            "value": "SYN-VISIT-001"
+          }
+        ],
+        "status": "in-progress",
+        "class": {
+          "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+          "code": "IMP"
+        },
+        "subject": {
+          "reference": "Patient/patient-74dac098d8b3ef5d17e65721d2f21bd8"
+        }
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Encounter/encounter-e957a59bf722a999b1744a22551e416f"
+      }
+    }
+  ]
+}

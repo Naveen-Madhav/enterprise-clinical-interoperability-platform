@@ -1,0 +1,65 @@
+{
+  "resourceType": "Bundle",
+  "type": "transaction",
+  "entry": [
+    {
+      "fullUrl": "https://bridge.example.invalid/fhir/Patient/patient-74dac098d8b3ef5d17e65721d2f21bd8",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "patient-74dac098d8b3ef5d17e65721d2f21bd8",
+        "identifier": [
+          {
+            "system": "urn:id:FICTIONAL_MRN",
+            "value": "SYN-1001"
+          }
+        ],
+        "name": [
+          {
+            "family": "ExampleOnly",
+            "given": [
+              "Avery"
+            ]
+          }
+        ],
+        "gender": "unknown",
+        "birthDate": "1988-02-14"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "Patient/patient-74dac098d8b3ef5d17e65721d2f21bd8"
+      }
+    },
+    {
+      "fullUrl": "https://bridge.example.invalid/fhir/ServiceRequest/order-250d514cbcf804066a3611bb6a5c87d3",
+      "resource": {
+        "resourceType": "ServiceRequest",
+        "id": "order-250d514cbcf804066a3611bb6a5c87d3",
+        "identifier": [
+          {
+            "system": "urn:id:fictional-placer",
+            "value": "SYN-ORDER-001"
+          }
+        ],
+        "status": "active",
+        "intent": "order",
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "24627-2",
+              "display": "CT Chest"
+            }
+          ]
+        },
+        "subject": {
+          "reference": "Patient/patient-74dac098d8b3ef5d17e65721d2f21bd8"
+        },
+        "occurrenceDateTime": "2026-06-10T12:05:00-05:00"
+      },
+      "request": {
+        "method": "PUT",
+        "url": "ServiceRequest/order-250d514cbcf804066a3611bb6a5c87d3"
+      }
+    }
+  ]
+}

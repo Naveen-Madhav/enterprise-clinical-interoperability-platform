@@ -36,7 +36,17 @@ def capability_statement() -> dict:
                         "updateCreate": True,
                         "versioning": "no-version",
                     }
-                    for kind in ("Patient", "Encounter", "Observation", "DiagnosticReport")
+                    for kind in (
+                        "Patient",
+                        "Encounter",
+                        "Observation",
+                        "DiagnosticReport",
+                        "ServiceRequest",
+                        "Appointment",
+                        "ImagingStudy",
+                        "Binary",
+                        "DocumentReference",
+                    )
                 ],
             }
         ],

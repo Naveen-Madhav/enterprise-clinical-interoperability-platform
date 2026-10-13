@@ -32,7 +32,7 @@ def synthetic_image(order_id="SYN-ORDER-001", patient_id="SYN-1001") -> FileData
     meta.MediaStorageSOPInstanceUID = uid_for("synthetic-instance:" + order_id)
     meta.TransferSyntaxUID = ExplicitVRLittleEndian
     meta.ImplementationClassUID = uid_for("fictional-imaging-generator")
-    image = FileDataset(None, {}, file_meta=meta, preamble=b"\x00" * 128)
+    image = FileDataset(None, {}, file_meta=meta, preamble=b"\x00" * 128, is_implicit_VR=False)
     values = {
         "SOPClassUID": meta.MediaStorageSOPClassUID,
         "SOPInstanceUID": meta.MediaStorageSOPInstanceUID,
