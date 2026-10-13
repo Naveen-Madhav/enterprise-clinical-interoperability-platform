@@ -1,0 +1,6 @@
+{
+  "host": "127.0.0.1",
+  "port": 11112,
+  "called_aet": "SYN_PACS",
+  "calling_aet": "SYN_MODALITY"
+}
