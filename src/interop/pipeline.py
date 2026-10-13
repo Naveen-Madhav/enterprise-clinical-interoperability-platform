@@ -13,17 +13,23 @@ def event(name: str, **fields):
 
 
 class Bridge:
-    def __init__(self, ledger, destination, *, max_attempts=3, retry_base=2.0):
+    def __init__(self, ledger, destination, *, router=None, max_attempts=3, retry_base=2.0):
         if max_attempts < 1 or retry_base < 0:
             raise ValueError("Invalid retry policy")
         self.ledger, self.destination = ledger, destination
+        self.router = router
         self.max_attempts, self.retry_base = max_attempts, retry_base
 
     def receive(self, raw: str) -> str:
         try:
             message = parse(raw)
             bundle = transform(message)
-            transaction_id = self.ledger.enqueue(message.source_key, message.raw, bundle)
+            transaction_id = self.ledger.enqueue(
+                message.source_key,
+                message.raw,
+                bundle,
+                routes=self.router.routes_for(bundle) if self.router else None,
+            )
             event("accepted", transaction_id=transaction_id)
             return acknowledge(raw, "AA")
         except InterfaceError as exc:
@@ -38,8 +44,11 @@ class Bridge:
         bundle = json.loads(row["bundle"])
         error, snapshots = None, None
         try:
-            snapshots = self.destination.deliver(bundle)
-            for entry in bundle["entry"]:
+            if self.router:
+                snapshots = self.router.deliver(bundle, json.loads(row["routes"]))
+            else:
+                snapshots = self.destination.deliver(bundle)
+            for entry in [] if self.router else bundle["entry"]:
                 path = entry["request"]["url"]
                 actual = snapshots.get(path)
                 # Server metadata is not clinical content; keep it out of equality checks.

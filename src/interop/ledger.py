@@ -1,6 +1,7 @@
 """One-process SQLite outbox and separate source/destination evidence tables."""
 
 import hashlib
+import json
 import os
 import sqlite3
 import threading
@@ -20,7 +21,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     id INTEGER PRIMARY KEY, source_key TEXT UNIQUE NOT NULL, payload_hash TEXT NOT NULL,
     payload TEXT NOT NULL, bundle TEXT NOT NULL, state TEXT NOT NULL,
     attempts INTEGER NOT NULL DEFAULT 0, next_attempt REAL NOT NULL DEFAULT 0,
-    diagnostic TEXT, created_at REAL NOT NULL
+    diagnostic TEXT, routes TEXT NOT NULL DEFAULT '[]', created_at REAL NOT NULL
 );
 CREATE TABLE IF NOT EXISTS attempts (
     id INTEGER PRIMARY KEY, transaction_id INTEGER NOT NULL REFERENCES transactions(id),
@@ -98,7 +99,7 @@ class Ledger:
                 raise InterfaceError("source.control-id-collision", ack="AR")
             self.db.execute("INSERT OR IGNORE INTO source_manifest VALUES (?, ?)", (key, value))
 
-    def enqueue(self, key: str, raw: str, bundle: dict) -> int:
+    def enqueue(self, key: str, raw: str, bundle: dict, routes: list[str] | None = None) -> int:
         with self.lock, self.db:
             value = payload_digest(raw)
             existing = self.db.execute(
@@ -109,16 +110,27 @@ class Ledger:
                     raise InterfaceError("source.control-id-collision", ack="AR")
                 return existing["id"]
             row = self.db.execute(
-                "INSERT INTO transactions(source_key,payload_hash,payload,bundle,state,created_at) "
-                "VALUES (?,?,?,?,?,?)",
-                (key, value, raw, canonical(bundle), "pending", time.time()),
+                "INSERT INTO transactions(source_key,payload_hash,payload,bundle,state,routes,created_at) "
+                "VALUES (?,?,?,?,?,?,?)",
+                (
+                    key,
+                    value,
+                    raw,
+                    canonical(bundle),
+                    "pending",
+                    json.dumps(routes or []),
+                    time.time(),
+                ),
             )
             transaction_id = row.lastrowid
-            for entry in bundle["entry"]:
-                self.db.execute(
-                    "INSERT INTO expected_resources VALUES (?,?,?)",
-                    (transaction_id, entry["request"]["url"], digest(entry["resource"])),
-                )
+            for name in routes or [""]:
+                for entry in bundle["entry"]:
+                    path = entry["request"]["url"]
+                    path = f"{name}|{path}" if name else path
+                    self.db.execute(
+                        "INSERT INTO expected_resources VALUES (?,?,?)",
+                        (transaction_id, path, digest(entry["resource"])),
+                    )
             return transaction_id
 
     def reject(self, raw: str, code: str):

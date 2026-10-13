@@ -23,7 +23,7 @@ def test_nominal_standard_structure(name):
         ("19880214", "19880230", "profile.birth-date"),
         ("92|mg/dL", "ninety|mg/dL", "profile.NM"),
         ("|||F", "|||X", "profile.OBX-status-or-repetition"),
-        ("ORU^R01^ORU_R01", "ORM^O01^ORM_O01", "profile.workflow"),
+        ("ORU^R01^ORU_R01", "ORM^O01^ORM_O01", "profile.segment-order"),
         ("|P|2.5.1", "|P|2.4", "profile.version-or-processing"),
     ],
 )

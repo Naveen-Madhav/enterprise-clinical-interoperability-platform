@@ -1,0 +1,8 @@
+{
+  "Encounter": ["repository"],
+  "ServiceRequest": ["repository", "ris"],
+  "DiagnosticReport": ["repository", "external-results"],
+  "Appointment": ["repository", "scheduler"],
+  "ImagingStudy": ["repository"],
+  "DocumentReference": ["repository"]
+}

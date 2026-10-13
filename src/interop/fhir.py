@@ -29,7 +29,18 @@ def digest(value: dict) -> str:
 
 
 def validate_resource(resource: dict) -> dict:
-    allowed = {"Patient", "Encounter", "Observation", "DiagnosticReport", "Bundle"}
+    allowed = {
+        "Patient",
+        "Encounter",
+        "Observation",
+        "DiagnosticReport",
+        "Bundle",
+        "ServiceRequest",
+        "Appointment",
+        "DocumentReference",
+        "Binary",
+        "ImagingStudy",
+    }
     kind = resource.get("resourceType")
     if kind not in allowed:
         raise InterfaceError("fhir.resource-type")
@@ -132,6 +143,39 @@ def transform(message: Message) -> dict:
                     "code": {"I": "IMP", "O": "AMB", "E": "EMER"}[pv1.field(2)],
                 },
                 "subject": subject,
+            }
+        )
+    elif message.workflow == "ORM^O01":
+        obr = message.one("OBR")
+        resources.append(
+            {
+                "resourceType": "ServiceRequest",
+                "id": logical_id("order", person["id"], obr.field(2)),
+                "identifier": [
+                    {"system": "urn:id:fictional-placer", "value": obr.field(2).split("^")[0]}
+                ],
+                "status": "active",
+                "intent": "order",
+                "code": coding(obr.field(4)),
+                "subject": subject,
+                "occurrenceDateTime": timestamp(obr.field(7)),
+            }
+        )
+    elif message.workflow == "SIU^S12":
+        sch, ais = message.one("SCH"), message.one("AIS")
+        timing = sch.field(11).split("^")
+        resources.append(
+            {
+                "resourceType": "Appointment",
+                "id": logical_id("appointment", person["id"], sch.field(2)),
+                "identifier": [
+                    {"system": "urn:id:fictional-scheduler", "value": sch.field(2).split("^")[0]}
+                ],
+                "status": "booked",
+                "serviceType": [coding(ais.field(3))],
+                "start": timestamp(timing[3]),
+                "end": timestamp(timing[4]),
+                "participant": [{"actor": subject, "status": "accepted"}],
             }
         )
     elif message.workflow == "ORU^R01":

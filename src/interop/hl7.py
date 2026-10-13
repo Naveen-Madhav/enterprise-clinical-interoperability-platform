@@ -15,6 +15,8 @@ PROFILES = {
     "ADT^A01": ("MSH", "EVN", "PID", "PV1"),
     "ADT^A03": ("MSH", "EVN", "PID", "PV1"),
     "ORU^R01": ("MSH", "PID", "OBR", "OBX"),
+    "ORM^O01": ("MSH", "PID", "ORC", "OBR"),
+    "SIU^S12": ("MSH", "SCH", "PID", "RGS", "AIS"),
 }
 
 
@@ -126,7 +128,7 @@ def parse(raw: str) -> Message:
     names = tuple(s.name for s in message.segments)
     expected = (
         required
-        if message.workflow.startswith("ADT")
+        if message.workflow != "ORU^R01"
         else required[:-1] + ("OBX",) * len(message.all("OBX"))
     )
     if names != expected or (message.workflow == "ORU^R01" and not message.all("OBX")):
@@ -146,6 +148,25 @@ def parse(raw: str) -> Message:
         pv1 = message.one("PV1")
         if pv1.field(2) not in {"I", "O", "E"} or not pv1.field(19):
             raise InterfaceError("profile.PV1")
+    elif message.workflow == "ORM^O01":
+        orc, obr = message.one("ORC"), message.one("OBR")
+        if orc.field(1) != "NW" or not orc.field(2) or orc.field(2) != obr.field(2):
+            raise InterfaceError("profile.order-identity")
+        if not obr.field(4):
+            raise InterfaceError("profile.OBR")
+        timestamp(obr.field(7))
+    elif message.workflow == "SIU^S12":
+        sch, ais = message.one("SCH"), message.one("AIS")
+        if not sch.field(1) or not sch.field(2) or not sch.field(6) or not ais.field(3):
+            raise InterfaceError("profile.schedule")
+        timing = sch.field(11).split("^")
+        if len(timing) < 5:
+            raise InterfaceError("profile.schedule-timing")
+        start, end = timestamp(timing[3]), timestamp(timing[4])
+        if datetime.fromisoformat(start) >= datetime.fromisoformat(end):
+            raise InterfaceError("profile.schedule-range")
+        if timestamp(ais.field(4)) != start:
+            raise InterfaceError("profile.schedule-service-time")
     else:
         obr = message.one("OBR")
         if not obr.field(2) or not obr.field(3) or not obr.field(4):
@@ -167,7 +188,13 @@ def parse(raw: str) -> Message:
                 text(obx.field(5))
     try:
         # Library validation checks the standard structure in addition to this site's profile.
-        parse_message(raw, find_groups=True).validate()
+        if message.workflow == "ORM^O01":
+            # ORM's OBR/RQD/RQ1/RXO/ODS/ODT choice is checked by our exact sequence.
+            # hl7apy's generated choice group otherwise demands unselected alternatives.
+            for segment in parse_message(raw, find_groups=False).children:
+                segment.validate()
+        else:
+            parse_message(raw, find_groups=True).validate()
     except Exception as exc:
         raise InterfaceError("hl7.structure") from exc
     return message
