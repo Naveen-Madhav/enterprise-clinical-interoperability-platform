@@ -1,0 +1,38 @@
+{
+  "cda/processable/coreschemas/datatypes.xsd": {
+    "url": "https://raw.githubusercontent.com/HL7/CDA-core-2.0/e922fc35586fd2629f0c8a021080bca9ab424e18/schema/normative/processable/coreschemas/datatypes.xsd",
+    "sha256": "e3ced45f77a48478e7db3b50cb753b50eb0f39fd2c3228e2faebde1945f6045f"
+  },
+  "cda/processable/coreschemas/voc.xsd": {
+    "url": "https://raw.githubusercontent.com/HL7/CDA-core-2.0/e922fc35586fd2629f0c8a021080bca9ab424e18/schema/normative/processable/coreschemas/voc.xsd",
+    "sha256": "22970695278df249ead5aacced0cdf9a77b731bd249d7f2234dd3f79511e4b6b"
+  },
+  "cda/processable/coreschemas/NarrativeBlock.xsd": {
+    "url": "https://raw.githubusercontent.com/HL7/CDA-core-2.0/e922fc35586fd2629f0c8a021080bca9ab424e18/schema/normative/processable/coreschemas/NarrativeBlock.xsd",
+    "sha256": "8f02813bd43e0e1f383543dc22da1880ab8d93868116ee511888241cb8ebdfac"
+  },
+  "cda/processable/coreschemas/datatypes-base.xsd": {
+    "url": "https://raw.githubusercontent.com/HL7/CDA-core-2.0/e922fc35586fd2629f0c8a021080bca9ab424e18/schema/normative/processable/coreschemas/datatypes-base.xsd",
+    "sha256": "0c7dd69c07d41e18b02ece1aaf8a7a49d7f41bf1c2fa2b09e0932dd9446a3826"
+  },
+  "cda/processable/coreschemas/infrastructureRoot.xsd": {
+    "url": "https://raw.githubusercontent.com/HL7/CDA-core-2.0/e922fc35586fd2629f0c8a021080bca9ab424e18/schema/normative/processable/coreschemas/infrastructureRoot.xsd",
+    "sha256": "648280699e1e649bec88f068a33174280b761496956b98f0b46742351e84a995"
+  },
+  "cda/infrastructure/cda/CDA.xsd": {
+    "url": "https://raw.githubusercontent.com/HL7/CDA-core-2.0/e922fc35586fd2629f0c8a021080bca9ab424e18/schema/normative/infrastructure/cda/CDA.xsd",
+    "sha256": "eedb18548c905534233252144dbc86d5aa64e22ff77aa8d25cc78e8d2a31afac"
+  },
+  "cda/infrastructure/cda/POCD_MT000040.xsd": {
+    "url": "https://raw.githubusercontent.com/HL7/CDA-core-2.0/e922fc35586fd2629f0c8a021080bca9ab424e18/schema/normative/infrastructure/cda/POCD_MT000040.xsd",
+    "sha256": "88e057edafa22ab7205c303e3cf1c09a5c899481601447e74dbc6d312b32599b"
+  },
+  "ccda/Consolidation.sch": {
+    "url": "https://raw.githubusercontent.com/HL7/CDA-ccda-2.1/6d3ed96160b45a111895da4df5510c7fad9de01f/validation/Consolidated%20CDA%20Templates%20for%20Clinical%20Notes%20%28US%20Realm%29%20DSTU%20R2.1.sch",
+    "sha256": "04be58046a675735616e46cf52053688a2fc9d0c88010f14fd1c5a2f4ca5bd54"
+  },
+  "ccda/voc.xml": {
+    "url": "https://raw.githubusercontent.com/HL7/CDA-ccda-2.1/6d3ed96160b45a111895da4df5510c7fad9de01f/validation/voc.xml",
+    "sha256": "bc15f23f4f9d4abe8fa98a36eb57e5ade7f9d8f1829e7d0bf6359b2d1b1ced52"
+  }
+}

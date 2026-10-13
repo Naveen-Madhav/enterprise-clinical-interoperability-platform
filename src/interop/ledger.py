@@ -110,7 +110,8 @@ class Ledger:
                     raise InterfaceError("source.control-id-collision", ack="AR")
                 return existing["id"]
             row = self.db.execute(
-                "INSERT INTO transactions(source_key,payload_hash,payload,bundle,state,routes,created_at) "
+                "INSERT INTO transactions(source_key,payload_hash,payload,bundle,state,"
+                "routes,created_at) "
                 "VALUES (?,?,?,?,?,?,?)",
                 (
                     key,

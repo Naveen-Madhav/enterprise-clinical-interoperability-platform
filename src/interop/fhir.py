@@ -51,6 +51,10 @@ def validate_resource(resource: dict) -> dict:
         raise InterfaceError("fhir.shape") from exc
     statuses = {
         "Encounter": {"in-progress", "finished"},
+        "ServiceRequest": {"active", "completed"},
+        "Appointment": {"booked"},
+        "DocumentReference": {"current"},
+        "ImagingStudy": {"available"},
         "Observation": {"final", "preliminary", "corrected"},
         "DiagnosticReport": {"final", "preliminary", "corrected"},
     }
@@ -70,6 +74,10 @@ def validate_resource(resource: dict) -> dict:
             paths.add(path)
         for entry in normalized["entry"]:
             check_references(entry["resource"], paths)
+            if entry["resource"]["resourceType"] == "DocumentReference":
+                for item in entry["resource"]["content"]:
+                    if item["attachment"].get("url") not in paths:
+                        raise InterfaceError("fhir.document-binary-reference")
     return normalized
 
 
