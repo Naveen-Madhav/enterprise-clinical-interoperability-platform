@@ -46,6 +46,10 @@ def summarize_logs(lines) -> dict:
                         "reconcile.",
                         "dispatcher.",
                         "source.",
+                        "routing.",
+                        "dicom.",
+                        "ccda.",
+                        "standards.",
                     )
                 )
                 and len(diagnostic) <= 80

@@ -15,6 +15,11 @@ jobs:
           python-version: ${{ matrix.python }}
       - run: python -m pip install -r requirements-dev.lock
       - run: python -m pip install --no-deps -e .
+      - uses: actions/cache@v4
+        with:
+          path: runtime/standards
+          key: hl7-standards-${{ hashFiles('src/interop/standards-assets.json') }}
+      - run: interop-platform prepare-standards
       - run: pytest -q
       - run: ruff check .
       - run: ruff format --check .

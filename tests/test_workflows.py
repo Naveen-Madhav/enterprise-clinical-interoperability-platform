@@ -64,3 +64,10 @@ def test_fanout_retries_without_losing_destination_identity():
     assert len(paths) == 4
     assert {p.split("|")[0] for p in paths} == {"repository", "ris"}
     ledger.close()
+
+
+def test_discharge_updates_the_same_encounter_to_finished():
+    admit = transform(parse((SAMPLES / "adt_a01.hl7").read_text()))["entry"][1]["resource"]
+    discharge = transform(parse((SAMPLES / "adt_a03.hl7").read_text()))["entry"][1]["resource"]
+    assert discharge["id"] == admit["id"]
+    assert discharge["status"] == "finished"

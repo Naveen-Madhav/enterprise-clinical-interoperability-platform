@@ -7,6 +7,7 @@ import time
 from contextlib import contextmanager
 from urllib.parse import parse_qs, urlencode, urlparse
 
+from .errors import InterfaceError
 from .reference import ReferenceHandler, ReferenceServer
 from .smart import READ_SCOPES, challenge
 
@@ -122,7 +123,7 @@ class SmartHandler(ReferenceHandler):
             with self.server.lock:
                 self.server.tokens[grant["access_token"]]["patient"] = self.server.patient_id
             self.reply(200, grant, "application/json")
-        except (ValueError, UnicodeError):
+        except (InterfaceError, ValueError, UnicodeError):
             self.reply(400, {"error": "invalid_grant"}, "application/json")
 
     def authorized(self):
