@@ -2,6 +2,18 @@
 
 A clinical integration platform connecting HL7 v2 workflows, FHIR R4 APIs, SMART applications, DICOM storage, and C-CDA documents through explicit delivery contracts.
 
+## Sample output
+
+Recorded test and demo summary using Python 3.11; see the [verification evidence](docs/verification.md).
+
+```text
+Unit/integration suite: 78 tests passed
+Source transactions delivered: 6
+Destination resources matched: 16
+Central repository resources: 9
+Forced RIS 503: recovered; destination read-backs match
+```
+
 ## Integration problem
 
 Patient events, orders, scheduling messages, results, imaging instances, and clinical documents reach different systems through different protocols. Receiving an HL7 acknowledgment does not establish that a FHIR transaction completed or that PACS stored an image. The integration layer needs consistent identity, durable delivery state, and evidence from each destination.
@@ -106,3 +118,5 @@ Five nominal HL7 messages cover admission, discharge, a CT chest order, its sche
 Naveen Madhav | [LinkedIn](https://linkedin.com/in/naveenmadhav)
 
 Licensed under the [MIT License](LICENSE).
+
+**AI assistance:** I defined the project concept, requirements, and validation rule priorities based on my healthcare integration experience. AI coding assistants helped with planning, design exploration, implementation, debugging, testing, and documentation. I take responsibility for reviewing the project, checking its claims, and deciding what to submit.
