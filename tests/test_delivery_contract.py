@@ -89,3 +89,28 @@ def test_logs_do_not_include_source_or_access_tokens(caplog):
     assert "ExampleOnly" not in caplog.text
     assert "private" not in caplog.text
     ledger.close()
+
+
+def test_advertised_individual_updates_match_capability_statement():
+    from fhir.resources.capabilitystatement import CapabilityStatement
+
+    raw = (Path(__file__).parents[1] / "samples/oru_r01.hl7").read_text()
+    patient = transform(parse(raw))["entry"][0]["resource"]
+    with reference_peer() as peer, httpx.Client(timeout=8, trust_env=False) as client:
+        metadata = client.get(peer.origin + "/fhir/metadata").json()
+        assert CapabilityStatement.parse_obj(metadata).kind == "instance"
+        assert metadata["implementation"]["url"] == peer.origin + "/fhir"
+        tokens = ClientCredentials(
+            peer.origin + "/oauth/token", "legacy-bridge", peer.secret, "bridge.write", client
+        )
+        url = peer.origin + "/fhir/Patient/" + patient["id"]
+        headers = {
+            "Authorization": "Bearer " + tokens.access_token(),
+            "Content-Type": "application/fhir+json",
+        }
+        created = client.put(url, json=patient, headers=headers)
+        assert created.status_code == 201 and "Last-Modified" in created.headers
+        assert created.json()["meta"]["lastUpdated"]
+        assert client.put(url, json=patient, headers=headers).status_code == 200
+        wrong = dict(patient, id="different")
+        assert client.put(url, json=wrong, headers=headers).status_code == 400

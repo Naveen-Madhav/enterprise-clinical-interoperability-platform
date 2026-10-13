@@ -10,6 +10,8 @@ import secrets
 import threading
 import time
 from contextlib import contextmanager
+from datetime import UTC, datetime
+from email.utils import format_datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
 
@@ -17,12 +19,16 @@ from .errors import InterfaceError
 from .fhir import validate_resource
 
 
-def capability_statement() -> dict:
+def capability_statement(base="https://reference.example.invalid/fhir") -> dict:
     return {
         "resourceType": "CapabilityStatement",
         "status": "active",
         "date": "2026-10-12",
         "kind": "instance",
+        "implementation": {
+            "description": "Loopback interoperability reference endpoint",
+            "url": base,
+        },
         "fhirVersion": "4.0.1",
         "format": ["json"],
         "rest": [
@@ -81,12 +87,14 @@ class ReferenceHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         return
 
-    def reply(self, status, data, mime="application/fhir+json"):
+    def reply(self, status, data, mime="application/fhir+json", headers=None):
         body = json.dumps(data, separators=(",", ":")).encode()
         self.send_response(status)
         self.send_header("Content-Type", mime)
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
+        for name, value in (headers or {}).items():
+            self.send_header(name, value)
         self.end_headers()
         self.wfile.write(body)
 
@@ -124,7 +132,7 @@ class ReferenceHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
         if path == "/fhir/metadata":
-            self.reply(200, capability_statement())
+            self.reply(200, capability_statement(self.server.origin + "/fhir"))
         elif self.authorized():
             with self.server.lock:
                 resource = self.server.resources.get(path.removeprefix("/fhir/"))
@@ -132,6 +140,39 @@ class ReferenceHandler(BaseHTTPRequestHandler):
                 self.reply(200, resource)
             else:
                 self.outcome(404, "not-found")
+
+    def do_PUT(self):
+        if not self.authorized():
+            return
+        try:
+            if self.headers.get_content_type() != "application/fhir+json":
+                self.outcome(415, "not-supported")
+                return
+            parts = urlparse(self.path).path.split("/")
+            supported = {r["type"] for r in capability_statement()["rest"][0]["resource"]}
+            if len(parts) != 4 or parts[1] != "fhir" or parts[2] not in supported:
+                self.outcome(404, "not-found")
+                return
+            resource = validate_resource(json.loads(self.body()))
+            if resource["resourceType"] != parts[2] or resource.get("id") != parts[3]:
+                self.outcome(400, "invalid")
+                return
+            now = datetime.now(UTC)
+            resource["meta"] = {"lastUpdated": now.isoformat()}
+            target = "/".join(parts[2:])
+            with self.server.lock:
+                status = 200 if target in self.server.resources else 201
+                self.server.resources[target] = resource
+            self.reply(
+                status,
+                resource,
+                headers={
+                    "Last-Modified": format_datetime(now, usegmt=True),
+                    "Location": self.server.origin + "/fhir/" + target,
+                },
+            )
+        except (InterfaceError, ValueError, UnicodeError, OSError):
+            self.outcome(400, "invalid")
 
     def do_POST(self):
         try:
@@ -171,7 +212,9 @@ class ReferenceHandler(BaseHTTPRequestHandler):
                     for entry in bundle["entry"]:
                         target = entry["request"]["url"]
                         status = "200 OK" if target in staged else "201 Created"
-                        staged[target] = entry["resource"]
+                        resource = dict(entry["resource"])
+                        resource["meta"] = {"lastUpdated": datetime.now(UTC).isoformat()}
+                        staged[target] = resource
                         responses.append({"response": {"status": status, "location": target}})
                     self.server.resources = staged
                 self.reply(
